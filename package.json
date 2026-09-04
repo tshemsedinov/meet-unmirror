@@ -1,0 +1,16 @@
+{
+  "name": "meet-unmirror",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Circular always-on-top webcam overlay for Linux",
+  "main": "circlecam.js",
+  "scripts": {
+    "lint": "eslint . && prettier -c \"**/*.js\" \"**/*.json\" \"**/*.md\"",
+    "fix": "eslint . --fix && prettier --write \"**/*.js\" \"**/*.json\" \"**/*.md\""
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "eslint-config-metarhia": "^9.2.1",
+    "prettier": "^3.9.6"
+  }
+}
