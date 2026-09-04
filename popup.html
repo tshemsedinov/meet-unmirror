@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Meet Self-View Unmirror</title>
+  <style>
+    body {
+      width: 300px;
+      margin: 0;
+      padding: 16px;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+    }
+    h1 {
+      font-size: 16px;
+      margin: 0 0 14px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 6px;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .toggle label {
+      margin: 0;
+    }
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+    }
+    button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    #status {
+      min-height: 18px;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    .hint {
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.35;
+      opacity: .75;
+    }
+  </style>
+</head>
+<body>
+  <h1>Meet Self-View Unmirror</h1>
+
+  <div class="toggle">
+    <input id="enabled" type="checkbox">
+    <label for="enabled">Enable automatic unmirroring</label>
+  </div>
+
+  <label for="participantName">Participant name exactly as shown in Meet</label>
+  <input id="participantName" type="text" autocomplete="off">
+
+  <button id="save" type="button">Save</button>
+  <div id="status" role="status"></div>
+
+  <div class="hint">
+    This changes only your local Google Meet display. It does not modify the camera stream sent to other participants.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

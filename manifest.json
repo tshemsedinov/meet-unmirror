@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Google Meet Self-View Unmirror",
+  "version": "1.0.1",
+  "description": "Automatically unmirrors a selected participant's Google Meet video tile in your local view.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://meet.google.com/*"],
+  "action": {
+    "default_title": "Meet Self-View Unmirror",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
