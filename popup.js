@@ -5,42 +5,39 @@ const DEFAULTS = {
   participantName: 'Timur Shemsedinov',
 };
 
-const enabledEl = document.getElementById('enabled');
-const nameEl = document.getElementById('participantName');
-const saveEl = document.getElementById('save');
-const statusEl = document.getElementById('status');
+const enabledCheckbox = document.getElementById('enabled');
+const participantInput = document.getElementById('participantName');
+const saveButton = document.getElementById('save');
+const statusOutput = document.getElementById('status');
 
-const load = async () => {
+const loadSettings = async () => {
   const settings = await chrome.storage.sync.get(DEFAULTS);
-  enabledEl.checked = settings.enabled !== false;
-  nameEl.value = settings.participantName || DEFAULTS.participantName;
+  enabledCheckbox.checked = settings.enabled !== false;
+  participantInput.value = settings.participantName || DEFAULTS.participantName;
 };
 
-const save = async () => {
-  const participantName = nameEl.value.replace(/\s+/g, ' ').trim();
-
+const saveSettings = async () => {
+  const participantName = participantInput.value.replace(/\s+/g, ' ').trim();
   if (!participantName) {
-    statusEl.textContent = 'Enter a participant name.';
-    nameEl.focus();
+    statusOutput.textContent = 'Enter a participant name.';
+    participantInput.focus();
     return;
   }
-
   await chrome.storage.sync.set({
-    enabled: enabledEl.checked,
+    enabled: enabledCheckbox.checked,
     participantName,
   });
-
-  statusEl.textContent = 'Saved. Meet will update automatically.';
+  statusOutput.textContent = 'Saved. Meet will update automatically.';
   setTimeout(() => {
-    statusEl.textContent = '';
+    statusOutput.textContent = '';
   }, 1800);
 };
 
-saveEl.addEventListener('click', save);
-nameEl.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') save();
+saveButton.addEventListener('click', saveSettings);
+participantInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') saveSettings();
 });
 
-load().catch((error) => {
-  statusEl.textContent = `Error: ${error.message}`;
+loadSettings().catch((error) => {
+  statusOutput.textContent = `Error: ${error.message}`;
 });

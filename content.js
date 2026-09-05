@@ -13,8 +13,8 @@ let scanTimer = null;
 const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
 
 const markedVideos = () => {
-  const attr = MARKER.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
-  return document.querySelectorAll(`video[data-${attr}="true"]`);
+  const dataName = MARKER.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
+  return document.querySelectorAll(`video[data-${dataName}="true"]`);
 };
 
 const restoreAll = () => {
@@ -24,29 +24,24 @@ const restoreAll = () => {
   });
 };
 
-const findExactNameLabels = (name) => {
-  const wanted = normalize(name);
-  if (!wanted) return [];
-
-  return [...document.querySelectorAll('*')].filter((el) => {
-    if (el.children.length !== 0) return false;
-    return normalize(el.textContent) === wanted;
+const findNameLabels = (participantName) => {
+  const targetName = normalize(participantName);
+  if (!targetName) return [];
+  return [...document.querySelectorAll('*')].filter((element) => {
+    if (element.children.length !== 0) return false;
+    return normalize(element.textContent) === targetName;
   });
 };
 
-const findNearestVideo = (label) => {
-  let el = label;
-
-  while (el && el !== document.body) {
-    if (el.tagName === 'VIDEO') return el;
-
-    const videos = el.querySelectorAll?.('video');
+const findNearestVideo = (nameElement) => {
+  let element = nameElement;
+  while (element && element !== document.body) {
+    if (element.tagName === 'VIDEO') return element;
+    const videos = element.querySelectorAll?.('video');
     if (videos?.length === 1) return videos[0];
     if (videos?.length > 1) return null;
-
-    el = el.parentElement;
+    element = element.parentElement;
   }
-
   return null;
 };
 
@@ -55,16 +50,12 @@ const apply = () => {
     restoreAll();
     return;
   }
-
-  const labels = findExactNameLabels(settings.participantName);
+  const nameElements = findNameLabels(settings.participantName);
   const matchedVideos = new Set();
-
-  for (const label of labels) {
-    const video = findNearestVideo(label);
+  for (const nameElement of nameElements) {
+    const video = findNearestVideo(nameElement);
     if (!video) continue;
-
     matchedVideos.add(video);
-
     if (video.dataset[MARKER] !== 'true') {
       video.style.setProperty('scale', '-1 1', 'important');
       video.dataset[MARKER] = 'true';
@@ -89,26 +80,23 @@ const scheduleApply = (delay = 150) => {
 
 const loadSettings = async () => {
   try {
-    const stored = await chrome.storage.sync.get(DEFAULTS);
+    const storedSettings = await chrome.storage.sync.get(DEFAULTS);
     settings = {
-      enabled: stored.enabled !== false,
+      enabled: storedSettings.enabled !== false,
       participantName: normalize(
-        stored.participantName || DEFAULTS.participantName,
+        storedSettings.participantName || DEFAULTS.participantName,
       ),
     };
   } catch (error) {
     console.warn('[Meet Self-View Unmirror] Could not load settings:', error);
     settings = { ...DEFAULTS };
   }
-
   scheduleApply(0);
 };
 
 const startObserver = () => {
   observer?.disconnect();
-
   observer = new MutationObserver(() => scheduleApply());
-
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
@@ -117,17 +105,14 @@ const startObserver = () => {
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== 'sync') return;
-
   if (changes.enabled) {
     settings.enabled = changes.enabled.newValue !== false;
   }
-
   if (changes.participantName) {
     settings.participantName = normalize(
       changes.participantName.newValue || DEFAULTS.participantName,
     );
   }
-
   restoreAll();
   scheduleApply(0);
 });
