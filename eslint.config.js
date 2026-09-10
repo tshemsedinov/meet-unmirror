@@ -8,6 +8,7 @@ module.exports = [
     languageOptions: {
       globals: {
         chrome: 'readonly',
+        NodeFilter: 'readonly',
       },
     },
   },

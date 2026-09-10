@@ -10,7 +10,7 @@ Default participant: `Timur Shemsedinov`
 2. Open Chrome and go to: `chrome://extensions`
 3. Enable **Developer mode**
 4. Click **Load unpacked**
-5. Select the extracted `meet-self-view-unmirror` folder
+5. Select the extracted `meet-unmirror` folder
 6. Open or reload Google Meet
 
 ## Configure
@@ -33,5 +33,6 @@ If you change the setting while a Meet tab is open, the extension updates the pa
 ## Files
 
 - `manifest.json`: Chrome extension manifest
+- `shared.js`: default settings, name normalization, settings parsing
 - `content.js`: finds the named participant tile and applies the local flip
 - `popup.html, popup.js`: settings UI
