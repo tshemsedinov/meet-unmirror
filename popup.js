@@ -1,8 +1,11 @@
 'use strict';
 
-const DEFAULTS = {
-  enabled: true,
-  participantName: 'Timur Shemsedinov',
+const { DEFAULTS, normalize, parseSettings } = globalThis.MeetUnmirror;
+
+const STATUS_CLEAR_MS = 1800;
+const STATUS = {
+  emptyName: 'Enter a participant name.',
+  saved: 'Saved. Meet will update automatically.',
 };
 
 const enabledCheckbox = document.getElementById('enabled');
@@ -10,34 +13,64 @@ const participantInput = document.getElementById('participantName');
 const saveButton = document.getElementById('save');
 const statusOutput = document.getElementById('status');
 
+let statusTimer = null;
+const abortController = new AbortController();
+
+const setStatus = (message) => {
+  clearTimeout(statusTimer);
+  statusTimer = null;
+  statusOutput.textContent = message;
+};
+
+const setStatusTemporarily = (message) => {
+  setStatus(message);
+  statusTimer = setTimeout(() => {
+    statusOutput.textContent = '';
+    statusTimer = null;
+  }, STATUS_CLEAR_MS);
+};
+
+const formatError = (error) => `Error: ${error.message || error}`;
+
 const loadSettings = async () => {
-  const settings = await chrome.storage.sync.get(DEFAULTS);
-  enabledCheckbox.checked = settings.enabled !== false;
-  participantInput.value = settings.participantName || DEFAULTS.participantName;
+  try {
+    const stored = await chrome.storage.sync.get(DEFAULTS);
+    const settings = parseSettings(stored);
+    enabledCheckbox.checked = settings.enabled;
+    participantInput.value = settings.participantName;
+  } catch (error) {
+    setStatus(formatError(error));
+  }
 };
 
 const saveSettings = async () => {
-  const participantName = participantInput.value.replace(/\s+/g, ' ').trim();
+  const participantName = normalize(participantInput.value);
   if (!participantName) {
-    statusOutput.textContent = 'Enter a participant name.';
+    setStatus(STATUS.emptyName);
     participantInput.focus();
     return;
   }
-  await chrome.storage.sync.set({
-    enabled: enabledCheckbox.checked,
-    participantName,
-  });
-  statusOutput.textContent = 'Saved. Meet will update automatically.';
-  setTimeout(() => {
-    statusOutput.textContent = '';
-  }, 1800);
+  try {
+    await chrome.storage.sync.set({
+      enabled: enabledCheckbox.checked,
+      participantName,
+    });
+  } catch (error) {
+    setStatus(formatError(error));
+    return;
+  }
+  setStatusTemporarily(STATUS.saved);
 };
 
-saveButton.addEventListener('click', saveSettings);
-participantInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') saveSettings();
-});
+const { signal } = abortController;
+saveButton.addEventListener('click', () => saveSettings(), { signal });
+participantInput.addEventListener(
+  'keydown',
+  (event) => {
+    if (event.key !== 'Enter') return;
+    saveSettings();
+  },
+  { signal },
+);
 
-loadSettings().catch((error) => {
-  statusOutput.textContent = `Error: ${error.message}`;
-});
+loadSettings();
